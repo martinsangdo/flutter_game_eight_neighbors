@@ -6,6 +6,7 @@ import '../models/game_models.dart';
 import '../game/game_engine.dart';
 import '../widgets/game_board.dart';
 import '../widgets/shape_painter.dart';
+import '../widgets/banner_ad_widget.dart';
 
 class GameScreen extends StatefulWidget {
   final GameSettings settings;
@@ -282,6 +283,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: const Color(0xFF000033),
+      bottomNavigationBar: const BannerAdWidget(),
       body: Stack(
         children: [
           // Board + rotation

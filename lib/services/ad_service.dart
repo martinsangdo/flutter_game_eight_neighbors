@@ -9,7 +9,7 @@ class AdService {
   // Replace these with your real AdMob unit IDs before release.
   static String get _bannerAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/6300978111'; // test
+      return 'ca-app-pub-8762959223087619/3052048635'; // banner Ad Unit ID for Android
     } else {
       return 'ca-app-pub-3940256099942544/2934735716'; // test
     }
@@ -17,7 +17,7 @@ class AdService {
 
   static String get _rewardedAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/5224354917'; // test
+      return 'ca-app-pub-8762959223087619/6897929887'; // rewarded Ad Unit ID for Android
     } else {
       return 'ca-app-pub-3940256099942544/1712485313'; // test
     }

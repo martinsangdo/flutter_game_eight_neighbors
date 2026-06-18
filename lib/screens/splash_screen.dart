@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/game_models.dart';
 import '../widgets/shape_painter.dart';
+import '../widgets/banner_ad_widget.dart';
 
 class SplashScreen extends StatefulWidget {
   final VoidCallback onStartGame;
@@ -78,6 +79,7 @@ class _SplashScreenState extends State<SplashScreen>
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
+      bottomNavigationBar: const BannerAdWidget(),
       body: Stack(
         children: [
           // Animated gradient background

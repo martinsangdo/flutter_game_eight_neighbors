@@ -6,6 +6,8 @@ import '../models/game_models.dart';
 import '../game/game_engine.dart';
 import '../widgets/game_board.dart';
 import '../widgets/shape_painter.dart';
+import '../widgets/banner_ad_widget.dart';
+import '../services/ad_service.dart';
 
 class GameScreen extends StatefulWidget {
   final GameSettings settings;
@@ -38,6 +40,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   bool _showGameOver = false;
   bool _showGameWin = false;
   bool _showAbandon = false;
+  bool _showContinueOffer = false;
+  bool _canContinue = true; // one continue per game
 
   ProgressionChoice? _progression;
 
@@ -100,6 +104,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       _showGameOver = false;
       _showGameWin = false;
       _showAbandon = false;
+      _showContinueOffer = false;
+      _canContinue = true;
       _progression = null;
     });
   }
@@ -200,17 +206,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   void _triggerGameOver() {
     final bumped = _engine.bumpSize(_engine.rows, _engine.cols, 'smaller');
-    setState(() {
-      _showGameOver = true;
-      _progression = ProgressionChoice(
-        rows: bumped['rows']!,
-        cols: bumped['cols']!,
-        template: widget.settings.template,
-        startRows: _engine.rows,
-        startCols: _engine.cols,
-        which: 'over',
-      );
-    });
+    final progression = ProgressionChoice(
+      rows: bumped['rows']!,
+      cols: bumped['cols']!,
+      template: widget.settings.template,
+      startRows: _engine.rows,
+      startCols: _engine.cols,
+      which: 'over',
+    );
+    if (_canContinue && _engine.hasSnapshot && AdService.instance.isRewardedAdReady) {
+      setState(() {
+        _showContinueOffer = true;
+        _progression = progression;
+      });
+    } else {
+      setState(() {
+        _showGameOver = true;
+        _progression = progression;
+      });
+    }
   }
 
   void _startFireworks() {
@@ -282,6 +296,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: const Color(0xFF000033),
+      bottomNavigationBar: const BannerAdWidget(),
       body: Stack(
         children: [
           // Board + rotation
@@ -304,7 +319,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     child: GameBoard(
                       engine: _engine,
                       onCellTap: _onCellTap,
-                      highlightedCells: _highlighted,
+                      highlightedCells: _highlighted.isNotEmpty ? _highlighted : _engine.hintCells,
                       poppingCells: _popping,
                       onSwipeLeft: () => _rotateBoard('left'),
                       onSwipeRight: () => _rotateBoard('right'),
@@ -361,6 +376,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           // Abandon confirm
           if (_showAbandon) _buildAbandonOverlay(),
 
+          // Continue offer (rewarded ad)
+          if (_showContinueOffer) _buildContinueOfferOverlay(),
+
           // Game Over
           if (_showGameOver) _buildGameOverOverlay(),
 
@@ -416,8 +434,33 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
+
+          // Hint button
+          GestureDetector(
+            onTap: _onHintTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text('💡', style: TextStyle(fontSize: 20)),
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  void _onHintTap() {
+    if (_animating || _showGameOver || _showGameWin) return;
+    AdService.instance.showRewardedAd(
+      onRewarded: () {
+        _engine.showHint(() {
+          if (mounted) setState(() {});
+        });
+      },
+      onFailed: () => _showToast('Ad not ready, try again soon'),
     );
   }
 
@@ -437,6 +480,58 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             label: '↻',
             onTap: () => _rotateBoard('right'),
             enabled: !_animating,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContinueOfferOverlay() {
+    return _Overlay(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('No moves left!',
+              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          const Text('Watch a short video to continue?',
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+              textAlign: TextAlign.center),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _OverlayButton(
+                label: 'NO THANKS',
+                color: const Color(0xFF6B7280),
+                onTap: () {
+                  setState(() {
+                    _showContinueOffer = false;
+                    _showGameOver = true;
+                  });
+                },
+              ),
+              _OverlayButton(
+                label: '▶ CONTINUE',
+                color: const Color(0xFF22C55E),
+                onTap: () {
+                  setState(() => _showContinueOffer = false);
+                  AdService.instance.showRewardedAd(
+                    onRewarded: () {
+                      _engine.restoreSnapshot();
+                      setState(() {
+                        _canContinue = false;
+                        _showGameOver = false;
+                      });
+                    },
+                    onFailed: () {
+                      setState(() => _showGameOver = true);
+                    },
+                  );
+                  _canContinue = false;
+                },
+              ),
+            ],
           ),
         ],
       ),

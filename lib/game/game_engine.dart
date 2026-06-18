@@ -1,4 +1,5 @@
 // lib/game/game_engine.dart
+import 'dart:async';
 import 'dart:math';
 import '../models/game_models.dart';
 
@@ -11,6 +12,14 @@ class GameEngine {
   int score = 0;
   bool hasMadeMove = false;
   Random _rng = Random();
+
+  // Hint highlight — set of "row,col" keys to glow
+  Set<String> hintCells = {};
+  Timer? _hintTimer;
+
+  // Snapshot for Continue-after-Game-Over
+  List<List<BoardCell>>? _snapshotBoard;
+  int _snapshotScore = 0;
 
   // ── Board Generation ─────────────────────────────────────────────────────
 
@@ -26,6 +35,9 @@ class GameEngine {
     this.minGroupSize = minGroupSize;
     score = 0;
     hasMadeMove = false;
+    hintCells = {};
+    _hintTimer?.cancel();
+    _snapshotBoard = null;
 
     int attempts = 0;
     do {
@@ -192,6 +204,66 @@ class GameEngine {
     return false;
   }
 
+  // ── Hint & Snapshot ───────────────────────────────────────────────────────
+
+  /// Returns [row, col] of the cell in the largest valid group, or null.
+  List<int>? getBestMove() {
+    List<int>? bestCell;
+    int bestSize = 0;
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < cols; c++) {
+        final cell = board[r][c];
+        if (!cell.hasShape) continue;
+        final group = findConnectedShapes(r, c, cell.shapeType!);
+        if (group.length >= minGroupSize && group.length > bestSize) {
+          bestSize = group.length;
+          bestCell = [r, c];
+        }
+      }
+    }
+    return bestCell;
+  }
+
+  /// Highlights the best move group for 3 seconds, then clears.
+  void showHint(void Function() onStateChanged) {
+    _hintTimer?.cancel();
+    hintCells = {};
+    final best = getBestMove();
+    if (best == null) return;
+    final group = findConnectedShapes(best[0], best[1], board[best[0]][best[1]].shapeType!);
+    hintCells = {for (final p in group) '${p[0]},${p[1]}'};
+    onStateChanged();
+    _hintTimer = Timer(const Duration(seconds: 3), () {
+      hintCells = {};
+      onStateChanged();
+    });
+  }
+
+  void _saveSnapshot() {
+    _snapshotBoard = List.generate(rows, (r) =>
+      List.generate(cols, (c) {
+        final cell = board[r][c];
+        return BoardCell(
+          shapeType: cell.shapeType,
+          isActive: cell.isActive,
+          isPrize: cell.isPrize,
+          prizeCollected: cell.prizeCollected,
+        );
+      }),
+    );
+    _snapshotScore = score;
+  }
+
+  bool get hasSnapshot => _snapshotBoard != null;
+
+  void restoreSnapshot() {
+    if (_snapshotBoard == null) return;
+    board = _snapshotBoard!;
+    score = _snapshotScore;
+    _snapshotBoard = null;
+    hintCells = {};
+  }
+
   /// Returns (points, prizesCollected) - empty list means invalid tap
   ({int points, int prizes, List<List<int>> cells}) tapCell(int row, int col) {
     final cell = board[row][col];
@@ -200,6 +272,7 @@ class GameEngine {
     final connected = findConnectedShapes(row, col, cell.shapeType!);
     if (connected.length < minGroupSize) return (points: 0, prizes: 0, cells: []);
 
+    _saveSnapshot();
     hasMadeMove = true;
     int prizesCollected = 0;
 

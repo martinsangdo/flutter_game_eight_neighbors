@@ -120,3 +120,5 @@ app.*.symbols
 
 .idea/
 .kotlin
+*.apk
+*.aab

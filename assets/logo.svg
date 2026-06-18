@@ -1,0 +1,63 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<rect width="512" height="512" fill="#000033" rx="48"/>
+
+<defs>
+  <filter id="glow">
+    <feGaussianBlur stdDeviation="3" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</defs>
+
+<!-- Subtle grid lines -->
+<g stroke="#1a1a5e" stroke-width="1" fill="none">
+  <line x1="170" y1="80" x2="170" y2="390"/>
+  <line x1="256" y1="80" x2="256" y2="390"/>
+  <line x1="342" y1="80" x2="342" y2="390"/>
+  <line x1="84" y1="152" x2="428" y2="152"/>
+  <line x1="84" y1="235" x2="428" y2="235"/>
+  <line x1="84" y1="318" x2="428" y2="318"/>
+</g>
+
+<!-- Row 1 -->
+<circle cx="127" cy="194" r="26" fill="#EF4444" filter="url(#glow)"/>
+<g transform="translate(213,194) rotate(45)">
+  <rect x="-20" y="-20" width="40" height="40" fill="#22C55E" filter="url(#glow)"/>
+</g>
+<polygon points="299,168 325,220 273,220" fill="#3B82F6" filter="url(#glow)"/>
+
+<!-- Row 2 -->
+<polygon points="127,252 153,277 127,302 101,277" fill="#FBBF24" filter="url(#glow)"/>
+<rect x="218" y="251" width="76" height="52" rx="8" fill="#6B46C1" opacity="0.35"/>
+<g transform="translate(256,277)">
+  <polygon points="0,-22 5,-8 20,-8 9,2 13,17 0,8 -13,17 -9,2 -20,-8 -5,-8" fill="#D946EF" filter="url(#glow)"/>
+</g>
+<polygon points="385,255 399,277 385,299 357,299 343,277 357,255" fill="#FFFFFF" filter="url(#glow)"/>
+
+<!-- Row 3 -->
+<circle cx="127" cy="360" r="26" fill="#EF4444" opacity="0.5"/>
+<g transform="translate(213,360) rotate(45)">
+  <rect x="-20" y="-20" width="40" height="40" fill="#22C55E" opacity="0.5"/>
+</g>
+<polygon points="299,334 325,386 273,386" fill="#3B82F6" opacity="0.5"/>
+
+<!-- Connecting lines from center to neighbors -->
+<g stroke="#6B46C1" stroke-width="1.5" opacity="0.6" fill="none">
+  <line x1="236" y1="257" x2="149" y2="198"/>
+  <line x1="256" y1="251" x2="256" y2="222"/>
+  <line x1="276" y1="257" x2="303" y2="198"/>
+  <line x1="232" y1="277" x2="155" y2="277"/>
+  <line x1="280" y1="277" x2="343" y2="277"/>
+  <line x1="236" y1="297" x2="149" y2="354"/>
+  <line x1="256" y1="303" x2="256" y2="332"/>
+  <line x1="276" y1="297" x2="303" y2="348"/>
+</g>
+
+<!-- Title text -->
+<text x="256" y="438" text-anchor="middle" font-family="'Arial Black', Arial, sans-serif" font-size="36" font-weight="900" letter-spacing="2" fill="#FFFFFF">EIGHT</text>
+<text x="256" y="474" text-anchor="middle" font-family="'Arial Black', Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="8" fill="#A78BFA">NEIGHBORS</text>
+
+<!-- Top decorative dots -->
+<circle cx="140" cy="64" r="4" fill="#6B46C1" opacity="0.8"/>
+<circle cx="256" cy="56" r="5" fill="#3B82F6" opacity="0.9"/>
+<circle cx="372" cy="64" r="4" fill="#6B46C1" opacity="0.8"/>
+</svg>

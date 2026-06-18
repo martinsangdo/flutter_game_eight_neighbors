@@ -734,6 +734,7 @@ class _ProgressionContent extends StatelessWidget {
               value: p.template,
               underline: const SizedBox(),
               isDense: true,
+              dropdownColor: Colors.white,
               items: BoardTemplate.values
                   .map((t) => DropdownMenuItem(value: t, child: Text(_tLabel(t))))
                   .toList(),

@@ -8,6 +8,7 @@ import '../widgets/game_board.dart';
 import '../widgets/shape_painter.dart';
 import '../widgets/banner_ad_widget.dart';
 import '../services/ad_service.dart';
+import '../services/sound_service.dart';
 
 class GameScreen extends StatefulWidget {
   final GameSettings settings;
@@ -117,6 +118,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     final connected = _engine.findConnectedShapes(row, col, cell.shapeType!);
     if (connected.length < _engine.minGroupSize) {
+      SoundService.instance.play(Sfx.invalid);
       // Flash briefly to indicate invalid
       setState(() {
         _highlighted = {for (final p in connected) '${p[0]},${p[1]}'};
@@ -134,6 +136,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     Future.delayed(const Duration(milliseconds: 120), () {
       if (!mounted) return;
+      SoundService.instance.play(Sfx.pop);
       // Pop animation
       setState(() {
         _popping = {for (final p in connected) '${p[0]},${p[1]}'};
@@ -151,6 +154,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         _scoreCtrl.forward(from: 0);
 
         if (result.prizes > 0) {
+          SoundService.instance.play(Sfx.prize);
           _showToast('⭐ Prize! +${result.prizes * 50} bonus');
         }
 
@@ -173,6 +177,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _rotating = true;
     _animating = true;
     _rotDir = dir;
+    SoundService.instance.play(Sfx.rotate);
     setState(() => _highlighted = {});
 
     _rotCtrl.forward(from: 0).then((_) {
@@ -189,6 +194,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _triggerWin() {
+    SoundService.instance.play(Sfx.win);
     final bumped = _engine.bumpSize(_engine.rows, _engine.cols, 'larger');
     setState(() {
       _showGameWin = true;
@@ -205,6 +211,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _triggerGameOver() {
+    SoundService.instance.play(Sfx.gameOver);
     final bumped = _engine.bumpSize(_engine.rows, _engine.cols, 'smaller');
     final progression = ProgressionChoice(
       rows: bumped['rows']!,

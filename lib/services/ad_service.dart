@@ -27,6 +27,7 @@ class AdService {
   bool _rewardedLoading = false;
 
   Future<void> initialize() async {
+    if (kIsWeb) return; // google_mobile_ads has no web implementation
     await MobileAds.instance.initialize();
     loadRewardedAd();
   }

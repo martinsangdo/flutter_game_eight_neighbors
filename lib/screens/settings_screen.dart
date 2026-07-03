@@ -1,6 +1,7 @@
 // lib/screens/settings_screen.dart
 import 'package:flutter/material.dart';
 import '../models/game_models.dart';
+import '../services/sound_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   final GameSettings settings;
@@ -113,7 +114,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: Switch(
                             value: _local.soundEnabled,
                             activeColor: const Color(0xFF22C55E),
-                            onChanged: (v) => setState(() => _local.soundEnabled = v),
+                            onChanged: (v) {
+                              setState(() => _local.soundEnabled = v);
+                              if (v) {
+                                // Preview so the user hears it working immediately
+                                SoundService.instance.enabled = true;
+                                SoundService.instance.play(Sfx.pop);
+                              }
+                            },
                           ),
                         ),
                       ],
@@ -168,7 +176,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           label: 'BACK',
                           color: const Color(0xFF3B82F6),
                           shadowColor: const Color(0xFF1E3A8A),
-                          onTap: widget.onBack,
+                          onTap: () {
+                            // Changes discarded — undo the sound preview state
+                            SoundService.instance.enabled = widget.settings.soundEnabled;
+                            widget.onBack();
+                          },
                         ),
                       ],
                     ),

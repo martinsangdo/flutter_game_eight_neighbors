@@ -7,10 +7,12 @@ import 'screens/splash_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/game_screen.dart';
 import 'services/ad_service.dart';
+import 'services/sound_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AdService.instance.initialize();
+  await SoundService.instance.initialize();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -60,7 +62,10 @@ class _AppNavigatorState extends State<_AppNavigator> {
   void _goToSplash() => setState(() => _screen = AppScreen.splash);
   void _goToSettings() => setState(() => _screen = AppScreen.settings);
 
-  void _saveSettings(GameSettings s) => setState(() => _settings = s);
+  void _saveSettings(GameSettings s) {
+    SoundService.instance.enabled = s.soundEnabled;
+    setState(() => _settings = s);
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -122,3 +122,6 @@ app.*.symbols
 .kotlin
 *.apk
 *.aab
+Debug.xcconfig
+Release.xcconfig
+ios/Flutter/*.xcconfig
